@@ -13,41 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ghidra.app.plugin.core.function.tags;
+package ghidra.app.decompiler.component;
 
-import ghidra.program.model.listing.FunctionTag;
+/**
+ * A poorly designed interface that does not correctly allow for modifying highlights
+ */
+@Deprecated // this will be removed after 9.2
+public interface DecompilerHighlightService {
 
-class FunctionTagRowObject {
+	/**
+	 * Returns the layout model of the Decompiler
+	 * @return the layout model
+	 */
+	@Deprecated
+	public ClangLayoutController getLayoutModel();
 
-	private FunctionTag tag;
-	private int count;
+	/**
+	 * Clears the <b>primary</b> highlights in the Decompiler
+	 */
+	@Deprecated
+	public void clearHighlights();
 
-	FunctionTagRowObject(FunctionTag tag, int count) {
-		this.tag = tag;
-		this.count = count;
-	}
-
-	FunctionTag getTag() {
-		return tag;
-	}
-
-	String getName() {
-		return tag.getName();
-	}
-
-	int getCount() {
-		return count;
-	}
-
-	void setCount(int count) {
-		this.count = count;
-	}
-
-	boolean isImmutable() {
-		return tag instanceof InMemoryFunctionTag;
-	}
-
-	String getComment() {
-		return tag.getComment();
-	}
 }
