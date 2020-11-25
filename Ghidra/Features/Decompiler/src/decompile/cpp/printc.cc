@@ -1757,6 +1757,7 @@ void PrintC::pushPartialSymbol(const Symbol *sym,int4 off,int4 sz,
   //                       globalstruct.(arrayfield[0])
   vector<PartialSymbolEntry> stack;
   Datatype *finalcast = (Datatype *)0;
+  bool skipBase = false;
   
   Datatype *ct = sym->getType();
 
@@ -1804,20 +1805,23 @@ void PrintC::pushPartialSymbol(const Symbol *sym,int4 off,int4 sz,
       succeeded = true;
     }
     if (!succeeded) {		// Subtype was not good
-      stack.push_back(PartialSymbolEntry());
-      PartialSymbolEntry &entry(stack.back());
-      entry.token = &object_member;
+      pushOp(&function_call,op);
       ostringstream s;
-      if (sz == 0)
-	sz = ct->getSize() - off;
-      // Special notation for subpiece which is neither
-      // array entry nor struct field
-      s << '_' << dec << off << '_' << sz << '_';
-      entry.fieldname = s.str();
-      entry.field = (const TypeField *)0;
-      entry.hilite = EmitXml::no_color;
-      finalcast = outtype;
+      s << "SUB" << sym->getType()->getSize() << '_' << sz;
+      pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+      pushOp(&comma,op);
+      pushSymbol(sym,vn,op);
+      ostringstream val;
+      val << off;
+      if (outtype->getMetatype() == TYPE_ARRAY)
+        pushAtom(Atom(val.str(),vartoken,EmitXml::const_color,op,vn));
+      else {
+        pushOp(&comma,op);
+        pushAtom(Atom(val.str(),vartoken,EmitXml::const_color,op,vn));
+        pushType(outtype);
+      }
       ct = (Datatype *)0;
+      skipBase = true;
     }
   }
 
@@ -1828,7 +1832,8 @@ void PrintC::pushPartialSymbol(const Symbol *sym,int4 off,int4 sz,
   // Push these on the RPN stack in reverse order
   for(int4 i=stack.size()-1;i>=0;--i)
     pushOp(stack[i].token,op);
-  pushSymbol(sym,vn,op);	// Push base symbol name
+  if (!skipBase)
+    pushSymbol(sym,vn,op);	// Push base symbol name
   for(int4 i=0;i<stack.size();++i) {
     const TypeField *field = stack[i].field;
     if (field == (const TypeField *)0)
