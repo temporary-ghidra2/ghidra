@@ -5631,7 +5631,10 @@ AddTreeState::AddTreeState(Funcdata &d,PcodeOp *op,int4 slot)
   ptrsize = ptr->getSize();
   ptrmask = calc_mask(ptrsize);
   baseType = ct->getPtrTo();
-  size = AddrSpace::byteToAddressInt(baseType->getSize(),ct->getWordSize());
+  if (baseType->isVariableLength())
+    size = 0;		// Open-ended size being pointed to, there will be no "multiples" component
+  else
+    size = AddrSpace::byteToAddressInt(baseType->getSize(),ct->getWordSize());
   shiftOffset = AddrSpace::byteToAddressInt(ct->getShiftOffset(), ct->getWordSize());
   multsum = 0;		// Sums start out as zero
   nonmultsum = 0;
