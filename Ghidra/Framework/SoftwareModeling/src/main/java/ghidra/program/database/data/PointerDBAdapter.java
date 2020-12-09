@@ -29,9 +29,9 @@ import ghidra.util.task.TaskMonitor;
 abstract class PointerDBAdapter {
 	static final String POINTER_TABLE_NAME = "Pointers";
 
-	static final Schema SCHEMA = new Schema(PointerDBAdapterV2.VERSION, "Pointer ID",
-		new Field[] { LongField.INSTANCE, LongField.INSTANCE, ByteField.INSTANCE },
-		new String[] { "Data Type ID", "Category ID", "Length" });
+	static final Schema SCHEMA = new Schema(PointerDBAdapterV2.VERSION, "Pointer ID", new Class[] {
+		LongField.class, LongField.class, ByteField.class }, new String[] { "Data Type ID",
+		"Category ID", "Length" });
 
 	static final int PTR_DT_ID_COL = 0;
 	static final int PTR_CATEGORY_COL = 1;

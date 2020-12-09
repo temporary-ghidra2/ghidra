@@ -79,7 +79,7 @@ class PointerDBAdapterV2 extends PointerDBAdapter {
 	}
 
 	@Override
-	Field[] getRecordIdsInCategory(long categoryID) throws IOException {
+	long[] getRecordIdsInCategory(long categoryID) throws IOException {
 		return table.findRecords(new LongField(categoryID), PTR_CATEGORY_COL);
 	}
 
