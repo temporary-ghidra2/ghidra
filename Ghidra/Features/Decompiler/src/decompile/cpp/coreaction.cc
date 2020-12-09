@@ -4246,7 +4246,7 @@ Datatype *ActionInferTypes::propagateAddIn2Out(TypeFactory *typegrp,PcodeOp *op,
   int4 offset = propagateAddPointer(op,inslot);
   if (offset==-1) return op->getOut()->getTempType(); // Doesn't look like a good pointer add
   uintb uoffset = AddrSpace::addressToByte(offset,((TypePointer *)rettype)->getWordSize());
-  if (tstruct->getSize() > 0 && !tstruct->isVariableLength())
+  if (tstruct->getSize() > 0)
     uoffset = uoffset % tstruct->getSize();
   if (uoffset==0) {
     if (op->code() == CPUI_PTRSUB) // Go down at least one level
