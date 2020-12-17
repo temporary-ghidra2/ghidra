@@ -369,28 +369,43 @@ void PrintC::opArrFunc(const PcodeOp *op)
   pushOp(&function_call,op);
   string nm = op->getOpcode()->getOperatorName(op);
   pushAtom(Atom(nm,optoken,EmitXml::no_color,op));
+  bool outArr = op->getOut()->getHigh()->getType()->getMetatype() != TYPE_ARRAY;
+  bool in0Arr = op->getIn(0)->getHigh()->getType()->getMetatype() != TYPE_ARRAY;
+  ostringstream s;
+  string name = "TOARR";
+  if (outArr)
+    pushOp(&comma,op);
   if (op->numInput() == 2) {
     pushOp(&comma,op);
-    if (op->getOut()->getHigh()->getType()->getMetatype() == TYPE_ARRAY) {
-      pushVnImplied(op->getIn(1),op,mods);
+    if (in0Arr) {
+      pushOp(&function_call,op);
+      s << name << op->getIn(0)->getSize();
+      pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+      s.str("");
+    }
+    bool in1Arr = (op->getIn(1)->getHigh()->getType()->getMetatype() != TYPE_ARRAY) && (nm.substr(0,6) == "CONCAT");
+    if (in1Arr) {
       pushVnImplied(op->getIn(0),op,mods);
+      pushOp(&function_call,op);
+      s << name << op->getIn(1)->getSize();
+      pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+      pushVnImplied(op->getIn(1),op,mods);
     }
     else {
-      pushVnImplied(op->getIn(0),op,mods);
-      pushOp(&comma,op);
       pushVnImplied(op->getIn(1),op,mods);
-      pushType(op->getOut()->getHigh()->getType());
+      pushVnImplied(op->getIn(0),op,mods);
     }
   }
   else {
-    if (op->getOut()->getHigh()->getType()->getMetatype() == TYPE_ARRAY)
-      pushVnImplied(op->getIn(0),op,mods);
-    else {
-      pushOp(&comma,op);
-      pushVnImplied(op->getIn(0),op,mods);
-      pushType(op->getOut()->getHigh()->getType());
+    if (in0Arr) {
+      pushOp(&function_call,op);
+      s << name << op->getIn(0)->getSize();
+      pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
     }
+    pushVnImplied(op->getIn(0),op,mods);
   }
+  if (outArr)
+    pushType(op->getOut()->getHigh()->getType());
 }
 
 void PrintC::opConv(const PcodeOp *op)
@@ -1809,15 +1824,21 @@ void PrintC::pushPartialSymbol(const Symbol *sym,int4 off,int4 sz,
       ostringstream s;
       s << "SUB" << sym->getType()->getSize() << '_' << sz;
       pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+      s.str("");
       pushOp(&comma,op);
+      if (sym->getType()->getMetatype() != TYPE_ARRAY) {
+        pushOp(&function_call,op);
+        s << "TOARR" << sym->getType()->getSize();
+        pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+        s.str("");
+      }
       pushSymbol(sym,vn,op);
-      ostringstream val;
-      val << off;
+      s << off;
       if (outtype->getMetatype() == TYPE_ARRAY)
-        pushAtom(Atom(val.str(),vartoken,EmitXml::const_color,op,vn));
+        pushAtom(Atom(s.str(),vartoken,EmitXml::const_color,op,vn));
       else {
         pushOp(&comma,op);
-        pushAtom(Atom(val.str(),vartoken,EmitXml::const_color,op,vn));
+        pushAtom(Atom(s.str(),vartoken,EmitXml::const_color,op,vn));
         pushType(outtype);
       }
       ct = (Datatype *)0;
