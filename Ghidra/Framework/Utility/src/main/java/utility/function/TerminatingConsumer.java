@@ -13,26 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ghidra.graph.export;
+package utility.function;
 
-enum GraphExportFormat {
-	CSV("csv"),
-	DIMACS("col"),
-	DOT("gv"),
-	GML("gml"),
-	GRAPHML("graphml"),
-	JSON("json"),
-	LEMON("lgf"),
-	MATRIX("g"),
-	VISIO("vsd");
+import java.util.function.Consumer;
 
-	private final String fileExtension;
+/**
+ * TerminatingConsumer is a Consumer {@link Consumer} that can request termination
+ * of the supplier once some condition is reached, for example some number of consumed results
+ * accepted.  If termination is required override the terminationRequested()
+ * method to return true when termination state is reached.
+ *
+ * @param <T> the type of the input to the operation
+ */
+public interface TerminatingConsumer<T> extends Consumer<T> {
 
-	GraphExportFormat(String fileExtension) {
-		this.fileExtension = fileExtension;
-	}
-
-	public String getDefaultFileExtension() {
-		return fileExtension;
-	}
+    default boolean terminationRequested() {
+        return false;
+    }
 }
