@@ -170,14 +170,7 @@ class PointerDB extends DataTypeDB implements Pointer {
 			else {
 				localDisplayName = dt.getDisplayName() + " *";
 			}
-			long shiftOffset = getShiftOffset();
-			String shiftSuffix = "";
-			if (shiftOffset < 0) {
-				shiftSuffix = "-0x" + Long.toHexString(-shiftOffset);
-			} else if (shiftOffset > 0) {
-				shiftSuffix = "+0x" + Long.toHexString(shiftOffset);
-			}
-			displayName = localDisplayName + shiftSuffix;
+			displayName = localDisplayName;
 		}
 		return localDisplayName;
 	}
