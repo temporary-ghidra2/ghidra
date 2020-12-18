@@ -157,15 +157,8 @@ class PointerDB extends DataTypeDB implements Pointer {
 	@Override
 	public String getDisplayName() {
 		String localDisplayName = displayName;
-		long shiftOffset = getShiftOffset();
-		String shiftSuffix = "";
-		if (shiftOffset < 0) {
-			shiftSuffix = "-0x" + Long.toHexString(-shiftOffset);
-		} else if (shiftOffset > 0) {
-			shiftSuffix = "+0x" + Long.toHexString(shiftOffset);
-		}
 		if (localDisplayName != null && !isInvalid()) {
-			return localDisplayName + shiftSuffix;
+			return localDisplayName;
 		}
 		lock.acquire();
 		try {
@@ -183,7 +176,7 @@ class PointerDB extends DataTypeDB implements Pointer {
 					displayName = dt.getDisplayName() + " *";
 				}
 			}
-			return displayName + shiftSuffix;
+			return displayName;
 		}
 		finally {
 			lock.release();
