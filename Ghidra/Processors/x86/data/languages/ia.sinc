@@ -7663,9 +7663,33 @@ define pcodeop rsqrtss;
 :RSQRTSS         XmmReg1, m32      is vexMode=0 &  $(PRE_F3) & byte=0x0F; byte=0x52; XmmReg1 ... & m32 { XmmReg1 = rsqrtss(XmmReg1, m32); }
 :RSQRTSS         XmmReg1, XmmReg2 is vexMode=0 &  $(PRE_F3) & byte=0x0F; byte=0x52; xmmmod = 3 & XmmReg1 & XmmReg2 { XmmReg1 = rsqrtss(XmmReg1, XmmReg2); }
 
-define pcodeop shufpd;
-:SHUFPD          XmmReg1, m128, imm8     is vexMode=0 & $(PRE_66) & byte=0x0F; byte=0xC6; XmmReg1 ... & m128; imm8 { XmmReg1 = shufpd(XmmReg1, m128, imm8:8); }
-:SHUFPD          XmmReg1, XmmReg2, imm8  is vexMode=0 & $(PRE_66) & byte=0x0F; byte=0xC6; xmmmod=3 & XmmReg1 & XmmReg2; imm8 { XmmReg1 = shufpd(XmmReg1, XmmReg2, imm8:8); }
+# determine the total shift required by the bit fields in a double shuffle opcode
+OrderD0: order0	is imm8 [ order0 = (( imm8       & 0x1) << 6); ] { export *[const]:1 order0; } 
+OrderD1: order1	is imm8 [ order1 = (((imm8 >> 1) & 0x1) << 6); ] { export *[const]:1 order1; } 
+
+:SHUFPD          XmmReg1, m128, imm8     is vexMode=0 & $(PRE_66) & byte=0x0F; byte=0xC6; XmmReg1 ... & m128; imm8 & OrderD0 & OrderD1
+{
+    shifted:16 = XmmReg1 >> OrderD0;   
+    tempA:8 = shifted:8;
+
+    shifted = m128 >> OrderD1;   
+    tempB:8 = shifted:8;
+
+    XmmReg1[0,64] = tempA;
+    XmmReg1[64,64] = tempB;
+}
+
+:SHUFPD          XmmReg1, XmmReg2, imm8  is vexMode=0 & $(PRE_66) & byte=0x0F; byte=0xC6; xmmmod=3 & XmmReg1 & XmmReg2; imm8 & OrderD0 & OrderD1
+{
+    shifted:16 = XmmReg1 >> OrderD0;   
+    tempA:8 = shifted:8;
+
+    shifted = XmmReg2 >> OrderD1;   
+    tempB:8 = shifted:8;
+
+    XmmReg1[0,64] = tempA;
+    XmmReg1[64,64] = tempB;
+}
 
 :SHUFPS  XmmReg1, m128, imm8  is vexMode=0 & mandover=0 & byte=0x0F; byte=0xC6; (m128 & XmmReg1 ...); imm8 & Order0 & Order1 & Order2 & Order3
 {
