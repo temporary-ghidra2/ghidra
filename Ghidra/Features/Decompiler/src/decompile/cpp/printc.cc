@@ -395,20 +395,32 @@ void PrintC::opArrFunc(const PcodeOp *op)
   if (outArr)
     pushOp(&comma,op);
   if (op->numInput() == 2) {
-    pushOp(&comma,op);
-    if (in0Arr) {
-      pushOp(&function_call,op);
-      s << name << op->getIn(0)->getSize();
-      pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
-      s.str("");
-    }
     bool in1Arr = (op->getIn(1)->getHigh()->getType()->getMetatype() != TYPE_ARRAY) && (nm.substr(0,6) == "CONCAT");
-    if (in1Arr) {
-      pushVnImplied(op->getIn(0),op,mods);
-      pushOp(&function_call,op);
-      s << name << op->getIn(1)->getSize();
-      pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
-      pushVnImplied(op->getIn(1),op,mods);
+    pushOp(&comma,op);
+    if (in0Arr || in1Arr) {
+      if (in0Arr) {
+        pushOp(&function_call,op);
+        s << name << op->getIn(0)->getSize();
+        pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+        s.str("");
+        pushOp(&comma,op);
+        pushVnImplied(op->getIn(0),op,mods);
+        pushType(op->getIn(0)->getHigh()->getType());
+      }
+      else {
+        pushVnImplied(op->getIn(0),op,mods);
+      }
+      if (in1Arr) {
+        pushOp(&function_call,op);
+        s << name << op->getIn(1)->getSize();
+        pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+        pushOp(&comma,op);
+        pushVnImplied(op->getIn(1),op,mods);
+        pushType(op->getIn(1)->getHigh()->getType());
+      }
+      else {
+        pushVnImplied(op->getIn(1),op,mods);
+      }
     }
     else {
       pushVnImplied(op->getIn(1),op,mods);
@@ -420,8 +432,13 @@ void PrintC::opArrFunc(const PcodeOp *op)
       pushOp(&function_call,op);
       s << name << op->getIn(0)->getSize();
       pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
+      pushOp(&comma,op);
+      pushVnImplied(op->getIn(0),op,mods);
+      pushType(op->getIn(0)->getHigh()->getType());
     }
-    pushVnImplied(op->getIn(0),op,mods);
+    else {
+      pushVnImplied(op->getIn(0),op,mods);
+    }
   }
   if (outArr)
     pushType(op->getOut()->getHigh()->getType());
@@ -1850,8 +1867,13 @@ void PrintC::pushPartialSymbol(const Symbol *sym,int4 off,int4 sz,
         s << "TOARR" << sym->getType()->getSize();
         pushAtom(Atom(s.str(),optoken,EmitXml::no_color,op));
         s.str("");
+        pushOp(&comma,op);
+        pushSymbol(sym,vn,op);
+        pushType(sym->getType());
       }
-      pushSymbol(sym,vn,op);
+       else {
+        pushSymbol(sym,vn,op);
+      }
       s << off;
       if (outtype->getMetatype() == TYPE_ARRAY)
         pushAtom(Atom(s.str(),vartoken,EmitXml::const_color,op,vn));
